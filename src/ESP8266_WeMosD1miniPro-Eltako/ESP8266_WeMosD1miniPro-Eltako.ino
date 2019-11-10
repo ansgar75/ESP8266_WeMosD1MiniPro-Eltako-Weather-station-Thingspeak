@@ -20,13 +20,15 @@
 #include <DHT.h>
 #include "PrivateEnvVariables.h"
 // Libraries for web server and over-the-air HTTP update server.
-#include <ESP8266WebServer.h>
-#include <ESP8266mDNS.h>
-#include <ESP8266HTTPUpdateServer.h>
+// Disabled as it seems to conflict with ThingSpeak (see https://github.community/t5/Programming-Help-and-Discussion/ESP8266WebServer-h-or-ESP8266mDNS-interfering-with-ThingSpeak-h/td-p/33220)
+// To re-enable uncomment following 3 lines.
+//#include <ESP8266WebServer.h>
+//#include <ESP8266mDNS.h>
+//#include <ESP8266HTTPUpdateServer.h>
 
 #define BUFFER_SIZE 64
 #define MSG_SIZE 40
-#define DHTPIN 4                      // DHT Sensor connected to digital pin 2
+#define DHTPIN 4                      // DHT Sensor connected to digital pin 2 (D2), corresponding to GPIO4 (see https://wiki.wemos.cc/products:d1:d1_mini)
 #define DHTTYPE DHT11                 // Type of DHT sensor
 #define DELAY_MS 10                   // Delay in ms
 #define READ_INTERVAL 1000            // Read from serial every x ms
@@ -46,8 +48,9 @@ WiFiClient client;
 DHT dht(DHTPIN, DHTTYPE);
 
 // Initialize web server and over-the-air HTTP update server
-ESP8266WebServer httpServer(80);
-ESP8266HTTPUpdateServer httpUpdater;
+// Disabled (see reason in Library inclusion above). To re-enable uncomment following 2 lines.
+//ESP8266WebServer httpServer(81);   // Access using http://IP_address:81
+//ESP8266HTTPUpdateServer httpUpdater;
 
 char recv_str[BUFFER_SIZE];
 float windValues[WEATHER_BUFFER];
@@ -278,11 +281,14 @@ void setup()
   // httpServer.on("/debug", webDebug);
 
   // Over-the-air HTTP update service, initialization sequence
+  // Disabled (see reason in Library inclusion above). To re-enable uncomment following comment block.
+  /*
   MDNS.begin(host);
   httpUpdater.setup(&httpServer, update_path, update_username, update_password);
   httpServer.begin();
-  MDNS.addService("http", "tcp", 80);
+  MDNS.addService("http", "tcp", 81);
   //Serial.println("HTTPUpdateServer ready! Open http://%s.local%s in your browser and login with username '%s' and password '%s'\n", host, update_path, update_username, update_password);
+  */
 
   // Intialite weather arrays
   for (size_t i = 0; i < WEATHER_BUFFER; ++i) {
@@ -302,7 +308,8 @@ void loop()
   unsigned int trxRetries;
 
   // Client for both web server and over-the-air HTTP image update service
-  httpServer.handleClient();
+  // Disabled (see reason in Library inclusion above). To re-enable uncomment following line.
+  //httpServer.handleClient();
 
   currentReadMillis = millis();
 
@@ -394,5 +401,3 @@ void loop()
     }
   }
 }
-
-
